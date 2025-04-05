@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #141e30, #243b55);
+  color: #f0f0f0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Contenedor principal */
+.home-page-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 80px;
+  background: linear-gradient(135deg, #141e30 50%, #1a1f2b 50%);
+}
+
+/* Contenido izquierdo */
+.home-page-content {
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* Logo */
+.home-page-logo {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  width: 100px;
+  height: auto;
+  transform: scale(1);
+  z-index: 10;
+}
+
+/* Tagline */
+.home-page-tagline {
+  font-size: 1.5rem;
+  margin: 20px 0;
+  color: #b8d8f8;
+  line-height: 1.6;
+}
+
+/* Botones */
+.home-page-buttons {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.home-page-btn {
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid #00fff7;
+  color: #00fff7;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: 0.3s ease;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+.home-page-btn:hover {
+  background: #00fff7;
+  color: #141e30;
+  transform: scale(1.05);
+}
+
+/* Imagen de fondo o personaje */
+.home-page-image {
+  width: 45%;
+  max-height: 90%;
+  object-fit: contain;
+  z-index: 1;
+}
