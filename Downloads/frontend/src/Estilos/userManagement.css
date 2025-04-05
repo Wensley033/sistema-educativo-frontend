@@ -1,0 +1,125 @@
+/* Estilos Globales */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #F2F2F2;
+    color: #a3c1e8;
+    margin: 0;
+    padding: 0;
+  }
+  
+  h1, h2 {
+    color: #1E4F8E;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  
+  /* Botones base */
+  button,
+  .btn-create-user,
+  .btn-update,
+  .btn-delete,
+  .btn-activate,
+  .btn-deactivate {
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+    letter-spacing: 0.5px;
+    background-color: #40C8FF;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(64, 200, 255, 0.2);
+  }
+  
+  /* Hover general */
+  button:hover,
+  .btn-create-user:hover,
+  .btn-update:hover,
+  .btn-delete:hover,
+  .btn-activate:hover,
+  .btn-deactivate:hover {
+    background-color: #fff;
+    color: #40C8FF;
+    border: 2px solid #40C8FF;
+  }
+  
+  /* Formularios */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    padding: 14px;
+    margin: 12px 0;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease-in-out;
+    box-sizing: border-box;
+    background-color: #fff;
+  }
+  
+  input:focus {
+    border-color: #40C8FF;
+    outline: none;
+  }
+  
+  /* Mensajes */
+  .text-error {
+    color: #FF3B30;
+    font-size: 0.9rem;
+    margin-top: 5px;
+  }
+  
+  .text-success {
+    color: #4CAF50;
+    font-size: 0.9rem;
+    margin-top: 5px;
+  }
+  
+  /* Lista de elementos */
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  li {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 15px 20px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  
+  li p {
+    margin: 0;
+    font-size: 1rem;
+    color: #162840;
+  }
+  
+  /* Contenedor de formulario */
+  .form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Estilo del formulario */
+  form {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    max-width: 500px;
+    width: 100%;
+    margin: 20px auto;
+  }
+  
