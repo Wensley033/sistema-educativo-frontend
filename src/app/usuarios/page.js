@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
+import { X, Plus, Pencil, Trash2, UserCircle, AlertTriangle, Search, Mail, Shield, Ban, CheckCircle } from 'lucide-react';
 
-export default function UsuariosPage() {
+export default function UsuariosView() {
   const [usuarios, setUsuarios] = useState([
     {
       id: 1,
@@ -46,442 +47,528 @@ export default function UsuariosPage() {
     },
   ]);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterRol, setFilterRol] = useState("Todos");
-  const [filterEstado, setFilterEstado] = useState("Todos");
-  const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState("add"); // 'add' o 'edit'
-  const [selectedUsuario, setSelectedUsuario] = useState(null);
+  const [modalAbierta, setModalAbierta] = useState(false);
+  const [modalConfirmacion, setModalConfirmacion] = useState(false);
+  const [usuarioAEliminar, setUsuarioAEliminar] = useState(null);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [usuarioActual, setUsuarioActual] = useState(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroRol, setFiltroRol] = useState('Todos');
+  const [filtroEstado, setFiltroEstado] = useState('Todos');
   const [formData, setFormData] = useState({
-    matricula: "",
-    nombre: "",
-    email: "",
-    rol: "Alumno",
-    password: "",
+    matricula: '',
+    nombre: '',
+    email: '',
+    rol: 'Alumno',
+    password: ''
   });
 
-  // Filtrar usuarios
-  const filteredUsuarios = usuarios.filter((usuario) => {
-    const matchSearch =
-      usuario.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      usuario.matricula.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      usuario.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchRol = filterRol === "Todos" || usuario.rol === filterRol;
-    const matchEstado =
-      filterEstado === "Todos" || usuario.estado === filterEstado;
-
-    return matchSearch && matchRol && matchEstado;
-  });
-
-  // Abrir modal para agregar
-  const handleAddClick = () => {
-    setModalMode("add");
+  const abrirModalAgregar = () => {
+    setModoEdicion(false);
     setFormData({
-      matricula: "",
-      nombre: "",
-      email: "",
-      rol: "Alumno",
-      password: "",
+      matricula: '',
+      nombre: '',
+      email: '',
+      rol: 'Alumno',
+      password: ''
     });
-    setShowModal(true);
+    setModalAbierta(true);
   };
 
-  // Abrir modal para editar
-  const handleEditClick = (usuario) => {
-    setModalMode("edit");
-    setSelectedUsuario(usuario);
+  const abrirModalEditar = (usuario) => {
+    setModoEdicion(true);
+    setUsuarioActual(usuario);
     setFormData({
       matricula: usuario.matricula,
       nombre: usuario.nombre,
       email: usuario.email,
       rol: usuario.rol,
-      password: "",
+      password: ''
     });
-    setShowModal(true);
+    setModalAbierta(true);
   };
 
-  // Guardar usuario
-  const handleSave = () => {
-    if (modalMode === "add") {
-      const newUsuario = {
-        id: usuarios.length + 1,
-        ...formData,
-        estado: "Activo",
-      };
-      setUsuarios([...usuarios, newUsuario]);
+  const cerrarModal = () => {
+    setModalAbierta(false);
+    setUsuarioActual(null);
+  };
+
+  const abrirModalConfirmacion = (usuario) => {
+    setUsuarioAEliminar(usuario);
+    setModalConfirmacion(true);
+  };
+
+  const cerrarModalConfirmacion = () => {
+    setModalConfirmacion(false);
+    setUsuarioAEliminar(null);
+  };
+
+  const confirmarEliminacion = () => {
+    if (usuarioAEliminar) {
+      setUsuarios(usuarios.filter(usr => usr.id !== usuarioAEliminar.id));
+      cerrarModalConfirmacion();
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (modoEdicion && usuarioActual) {
+      setUsuarios(usuarios.map(usr => 
+        usr.id === usuarioActual.id 
+          ? { ...usr, ...formData }
+          : usr
+      ));
     } else {
-      setUsuarios(
-        usuarios.map((u) =>
-          u.id === selectedUsuario.id ? { ...u, ...formData } : u
-        )
-      );
+      const nuevoUsuario = {
+        id: usuarios.length > 0 ? Math.max(...usuarios.map(u => u.id)) + 1 : 1,
+        ...formData,
+        estado: 'Activo'
+      };
+      setUsuarios([...usuarios, nuevoUsuario]);
     }
-    setShowModal(false);
+    
+    cerrarModal();
   };
 
-  // Suspender/Activar usuario
-  const handleToggleEstado = (usuario) => {
-    setUsuarios(
-      usuarios.map((u) =>
-        u.id === usuario.id
-          ? { ...u, estado: u.estado === "Activo" ? "Suspendido" : "Activo" }
-          : u
-      )
-    );
+  const toggleEstado = (usuario) => {
+    setUsuarios(usuarios.map(usr =>
+      usr.id === usuario.id
+        ? { ...usr, estado: usr.estado === 'Activo' ? 'Suspendido' : 'Activo' }
+        : usr
+    ));
   };
 
-  // Eliminar usuario
-  const handleDelete = (id) => {
-    if (confirm("¿Estás seguro de eliminar este usuario?")) {
-      setUsuarios(usuarios.filter((u) => u.id !== id));
-    }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const usuariosFiltrados = usuarios.filter(usuario => {
+    const matchBusqueda = 
+      usuario.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+      usuario.matricula.toLowerCase().includes(busqueda.toLowerCase()) ||
+      usuario.email.toLowerCase().includes(busqueda.toLowerCase());
+    const matchRol = filtroRol === 'Todos' || usuario.rol === filtroRol;
+    const matchEstado = filtroEstado === 'Todos' || usuario.estado === filtroEstado;
+    
+    return matchBusqueda && matchRol && matchEstado;
+  });
+
+  const obtenerColorRol = (rol) => {
+    const colores = {
+      'Alumno': 'bg-blue-100 text-blue-700',
+      'Profesor': 'bg-purple-100 text-purple-700',
+      'Admin': 'bg-red-100 text-red-700'
+    };
+    return colores[rol] || 'bg-slate-100 text-slate-700';
   };
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Usuarios</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Gestiona los usuarios del sistema
-          </p>
-        </div>
-        <button
-          onClick={handleAddClick}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Nuevo Usuario
-        </button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-4xl font-bold text-slate-800 flex items-center gap-3">
+                <UserCircle className="w-10 h-10 text-indigo-600" />
+                Usuarios
+              </h1>
+              <p className="text-slate-600 mt-2">
+                Gestiona los usuarios del sistema
+              </p>
+            </div>
+            <button
+              onClick={abrirModalAgregar}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 shadow-lg shadow-indigo-200 transition-all duration-200 hover:scale-105"
+            >
+              <Plus className="w-5 h-5" />
+              Nuevo Usuario
+            </button>
+          </div>
 
-      {/* Filtros y búsqueda */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="md:col-span-2">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg
-                  className="w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          {/* Barra de búsqueda y filtros */}
+          <div className="bg-white rounded-xl shadow-lg p-4 border border-slate-200">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="md:col-span-2">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Buscar por nombre, matrícula o email..."
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900 placeholder:text-slate-400"
                   />
-                </svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Buscar por nombre, matrícula o email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 placeholder:text-gray-500 font-medium"
-              />
-            </div>
-          </div>
-
-          <div>
-            <select
-              value={filterRol}
-              onChange={(e) => setFilterRol(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 font-medium"
-            >
-              <option value="Todos">Todos los roles</option>
-              <option value="Alumno">Alumno</option>
-              <option value="Profesor">Profesor</option>
-              <option value="Admin">Admin</option>
-            </select>
-          </div>
-
-          <div>
-            <select
-              value={filterEstado}
-              onChange={(e) => setFilterEstado(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 font-medium"
-            >
-              <option value="Todos">Todos los estados</option>
-              <option value="Activo">Activo</option>
-              <option value="Suspendido">Suspendido</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabla de usuarios */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Matrícula
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nombre
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Rol
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Estado
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsuarios.map((usuario) => (
-                <tr key={usuario.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {usuario.matricula}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {usuario.nombre}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {usuario.email}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        usuario.rol === "Profesor"
-                          ? "bg-purple-100 text-purple-800"
-                          : usuario.rol === "Admin"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {usuario.rol}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        usuario.estado === "Activo"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {usuario.estado}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => handleEditClick(usuario)}
-                        className="text-blue-600 hover:text-blue-800 font-medium"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleToggleEstado(usuario)}
-                        className={`${
-                          usuario.estado === "Activo"
-                            ? "text-orange-600 hover:text-orange-800"
-                            : "text-green-600 hover:text-green-800"
-                        } font-medium`}
-                      >
-                        {usuario.estado === "Activo" ? "Suspender" : "Activar"}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(usuario.id)}
-                        className="text-red-600 hover:text-red-800 font-medium"
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredUsuarios.length === 0 && (
-          <div className="text-center py-12">
-            <svg
-              className="w-12 h-12 text-gray-400 mx-auto mb-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-              />
-            </svg>
-            <p className="text-gray-500 font-medium">
-              No se encontraron usuarios
-            </p>
-            <p className="text-gray-400 text-sm mt-1">
-              Intenta ajustar los filtros de búsqueda
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Modal para agregar/editar */}
-      {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-          {/* Overlay con blur */}
-          <div
-            className="absolute inset-0 bg-black/10 backdrop-blur-[1px]"
-            onClick={() => setShowModal(false)}
-          ></div>
-
-          {/* Modal */}
-          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-900">
-                  {modalMode === "add" ? "Nuevo Usuario" : "Editar Usuario"}
-                </h3>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            {/* Body */}
-            <div className="p-6 space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Matrícula
-                </label>
-                <input
-                  type="text"
-                  value={formData.matricula}
-                  onChange={(e) =>
-                    setFormData({ ...formData, matricula: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all"
-                  placeholder="A001234"
-                />
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Nombre Completo
-                </label>
-                <input
-                  type="text"
-                  value={formData.nombre}
-                  onChange={(e) =>
-                    setFormData({ ...formData, nombre: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all"
-                  placeholder="Juan Pérez García"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all"
-                  placeholder="usuario@escuela.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Rol
-                </label>
                 <select
-                  value={formData.rol}
-                  onChange={(e) =>
-                    setFormData({ ...formData, rol: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all"
+                  value={filtroRol}
+                  onChange={(e) => setFiltroRol(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900"
                 >
+                  <option value="Todos">Todos los roles</option>
                   <option value="Alumno">Alumno</option>
                   <option value="Profesor">Profesor</option>
                   <option value="Admin">Admin</option>
                 </select>
               </div>
+
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Contraseña{" "}
-                  {modalMode === "edit" && (
-                    <span className="text-gray-500 font-normal">
-                      (dejar en blanco para no cambiar)
-                    </span>
-                  )}
-                </label>
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all"
-                  placeholder="••••••••"
-                />
+                <select
+                  value={filtroEstado}
+                  onChange={(e) => setFiltroEstado(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900"
+                >
+                  <option value="Todos">Todos los estados</option>
+                  <option value="Activo">Activo</option>
+                  <option value="Suspendido">Suspendido</option>
+                </select>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Footer */}
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 rounded-b-2xl">
-              <div className="flex gap-3">
+        {/* Tabla de Usuarios */}
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                    Usuario
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                    Matrícula
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                    Email
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                    Rol
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">
+                    Estado
+                  </th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-slate-700">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {usuariosFiltrados.map((usuario) => (
+                  <tr 
+                    key={usuario.id} 
+                    className="hover:bg-slate-50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-indigo-100 p-2 rounded-lg">
+                          <UserCircle className="w-5 h-5 text-indigo-600" />
+                        </div>
+                        <span className="font-semibold text-slate-800">
+                          {usuario.nombre}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-mono text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
+                        {usuario.matricula}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-slate-400" />
+                        <span className="text-slate-700">
+                          {usuario.email}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${obtenerColorRol(usuario.rol)}`}>
+                        <Shield className="w-3 h-3" />
+                        {usuario.rol}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
+                        usuario.estado === 'Activo' 
+                          ? 'bg-emerald-100 text-emerald-700' 
+                          : 'bg-red-100 text-red-700'
+                      }`}>
+                        {usuario.estado === 'Activo' ? (
+                          <CheckCircle className="w-3 h-3" />
+                        ) : (
+                          <Ban className="w-3 h-3" />
+                        )}
+                        {usuario.estado}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => abrirModalEditar(usuario)}
+                          className="p-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg transition-colors"
+                          title="Editar"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => toggleEstado(usuario)}
+                          className={`p-2 rounded-lg transition-colors ${
+                            usuario.estado === 'Activo'
+                              ? 'bg-orange-50 hover:bg-orange-100 text-orange-600'
+                              : 'bg-green-50 hover:bg-green-100 text-green-600'
+                          }`}
+                          title={usuario.estado === 'Activo' ? 'Suspender' : 'Activar'}
+                        >
+                          {usuario.estado === 'Activo' ? (
+                            <Ban className="w-4 h-4" />
+                          ) : (
+                            <CheckCircle className="w-4 h-4" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => abrirModalConfirmacion(usuario)}
+                          className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Empty State */}
+          {usuariosFiltrados.length === 0 && (
+            <div className="text-center py-12">
+              <UserCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-slate-600 mb-2">
+                {busqueda || filtroRol !== 'Todos' || filtroEstado !== 'Todos' 
+                  ? 'No se encontraron usuarios' 
+                  : 'No hay usuarios registrados'}
+              </h3>
+              <p className="text-slate-500">
+                {busqueda || filtroRol !== 'Todos' || filtroEstado !== 'Todos'
+                  ? 'Intenta ajustar los filtros de búsqueda' 
+                  : 'Comienza agregando tu primer usuario'
+                }
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Contador de resultados */}
+        {usuarios.length > 0 && (
+          <div className="mt-4 text-sm text-slate-600">
+            Mostrando {usuariosFiltrados.length} de {usuarios.length} usuarios
+          </div>
+        )}
+      </div>
+
+      {/* Modal Agregar/Editar */}
+      {modalAbierta && (
+        <div className="fixed inset-0 bg-black/10 backdrop-blur-[1px] flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-200 sticky top-0 bg-white z-10">
+              <h2 className="text-2xl font-bold text-slate-800">
+                {modoEdicion ? 'Editar Usuario' : 'Nuevo Usuario'}
+              </h2>
+              <button
+                onClick={cerrarModal}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleSubmit} className="p-6">
+              <div className="space-y-5">
+                {/* Matrícula */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Matrícula
+                  </label>
+                  <input
+                    type="text"
+                    name="matricula"
+                    value={formData.matricula}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900 placeholder:text-slate-400 font-mono"
+                    placeholder="A001234"
+                    required
+                  />
+                </div>
+
+                {/* Nombre */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Nombre Completo
+                  </label>
+                  <input
+                    type="text"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900 placeholder:text-slate-400"
+                    placeholder="Juan Pérez García"
+                    required
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900 placeholder:text-slate-400"
+                    placeholder="usuario@escuela.com"
+                    required
+                  />
+                </div>
+
+                {/* Rol */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Rol
+                  </label>
+                  <select
+                    name="rol"
+                    value={formData.rol}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900"
+                    required
+                  >
+                    <option value="Alumno">Alumno</option>
+                    <option value="Profesor">Profesor</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
+
+                {/* Contraseña */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Contraseña
+                    {modoEdicion && (
+                      <span className="text-slate-500 font-normal text-xs ml-2">
+                        (dejar en blanco para no cambiar)
+                      </span>
+                    )}
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-900 placeholder:text-slate-400"
+                    placeholder="••••••••"
+                    required={!modoEdicion}
+                  />
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex gap-3 mt-8">
                 <button
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors font-semibold"
+                  type="button"
+                  onClick={cerrarModal}
+                  className="flex-1 px-6 py-3 border border-slate-300 text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
-                  onClick={handleSave}
-                  className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold shadow-lg shadow-blue-500/30"
+                  type="submit"
+                  className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-colors shadow-lg shadow-indigo-200"
                 >
-                  {modalMode === "add" ? "Crear Usuario" : "Guardar Cambios"}
+                  {modoEdicion ? 'Actualizar' : 'Crear'}
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación */}
+      {modalConfirmacion && (
+        <div className="fixed inset-0 bg-black/10 backdrop-blur-[1px] flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <div className="flex items-center gap-3">
+                <div className="bg-red-100 p-2 rounded-lg">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-slate-800">
+                  Confirmar Eliminación
+                </h2>
+              </div>
+              <button
+                onClick={cerrarModalConfirmacion}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <p className="text-slate-600 mb-3">
+                ¿Estás seguro de que deseas eliminar este usuario?
+              </p>
+              <div className="bg-slate-50 rounded-lg p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <UserCircle className="w-4 h-4 text-slate-500" />
+                  <span className="text-slate-700">
+                    <span className="font-semibold">Nombre:</span> {usuarioAEliminar?.nombre}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-sm text-slate-600 bg-slate-200 px-2 py-1 rounded">
+                    {usuarioAEliminar?.matricula}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-slate-500" />
+                  <span className="text-slate-700 text-sm">
+                    {usuarioAEliminar?.email}
+                  </span>
+                </div>
+              </div>
+              <p className="text-slate-500 text-sm mt-4">
+                Esta acción no se puede deshacer.
+              </p>
+            </div>
+
+            <div className="flex gap-3 p-6 pt-0">
+              <button
+                type="button"
+                onClick={cerrarModalConfirmacion}
+                className="flex-1 px-6 py-3 border border-slate-300 text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmarEliminacion}
+                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-colors shadow-lg shadow-red-200"
+              >
+                Eliminar
+              </button>
             </div>
           </div>
         </div>
