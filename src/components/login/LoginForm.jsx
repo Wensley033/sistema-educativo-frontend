@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'sonner';
 
 export default function LoginForm() {
   const [matricula, setMatricula] = useState("");
@@ -9,19 +11,32 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Aquí va tu lógica de autenticación
-    console.log({ matricula, password });
+    try {
+      const result = await login({
+        usuario: matricula,
+        password: password,
+      });
 
-    // Simulación de delay
-    setTimeout(() => {
+      if (result.success) {
+        toast.success('Inicio de sesión exitoso', {
+          description: `Bienvenido ${result.user.nombre}`,
+        });
+        router.push("/home");
+      }
+    } catch (error) {
+      console.error('Error al iniciar sesión:', error);
+      toast.error('Error al iniciar sesión', {
+        description: error.message || 'Verifica tus credenciales e intenta nuevamente',
+      });
+    } finally {
       setIsLoading(false);
-      router.push("/home");
-    }, 1500);
+    }
   };
 
   return (
